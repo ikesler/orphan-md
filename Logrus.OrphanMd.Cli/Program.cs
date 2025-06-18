@@ -1,4 +1,7 @@
 ﻿using System.CommandLine;
+using System.CommandLine.Builder;
+using System.CommandLine.Help;
+using System.CommandLine.Parsing;
 using Lucene.Net.Analysis.Standard;
 using Lucene.Net.Documents;
 using Lucene.Net.Index;
@@ -14,11 +17,17 @@ var dryRunFolderOption = new Option<bool?>(
 
 var whatFolderOption = new Option<string>(
     name: "--what",
-    description: "What files to look for. Path to a directory, iterated in shallow manner.");
+    description: "What files to look for. Path to a directory, iterated in shallow manner.")
+{
+    IsRequired = true
+};
 
 var whereFolderOption = new Option<string>(
     name: "--where",
-    description: "Where to look for references. Path to a directory, iterated in deep manner. May contain --what directory - it will be ignored.");
+    description: "Where to look for references. Path to a directory, iterated in deep manner. May contain --what directory - it will be ignored.")
+{
+    IsRequired = true
+};
 
 var indexFolderOption = new Option<string?>(
     name: "--index",
@@ -86,4 +95,8 @@ rootCommand.SetHandler((what, where, index, dryRun) =>
     Console.WriteLine($"Found {hits} orphans from {files.Length}.");
 }, whatFolderOption, whereFolderOption, indexFolderOption, dryRunFolderOption);
 
-return await rootCommand.InvokeAsync(args);
+var parser = new CommandLineBuilder(rootCommand)
+    .UseDefaults()
+    .Build();
+
+return await parser.InvokeAsync(args);
